@@ -4,6 +4,8 @@
   "mysql-index": "인덱스",
   "normalization-denormalization": "정규화, 반정규화",
   "transaction": "트랜잭션",
+  "mysql-architecture": "MySQL 구조",
+  "query-cache": "쿼리 캐시",
   "about": {
     "title": "About",
     "type": "page"
