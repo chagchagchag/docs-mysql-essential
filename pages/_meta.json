@@ -2,6 +2,8 @@
   "index": "Introduction",
   "memory-disk-wal": "Memory vs Disk, WAL",
   "mysql-index": "인덱스",
+  "normalization-denormalization": "정규화, 반정규화",
+  "transaction": "트랜잭션",
   "about": {
     "title": "About",
     "type": "page"
