@@ -1,5 +1,6 @@
 {
   "index": "Introduction",
+  "memory-disk-wal": "Memory vs Disk, WAL",
   "database-index": "인덱스",
   "about": {
     "title": "About",
