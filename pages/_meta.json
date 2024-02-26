@@ -1,11 +1,12 @@
 {
   "index": "Introduction",
-  "memory-disk-wal": "Memory vs Disk, WAL",
   "mysql-index": "인덱스",
   "normalization-denormalization": "정규화, 반정규화",
   "transaction": "트랜잭션",
   "mysql-architecture": "MySQL 구조",
+  "memory-disk-wal": "Memory vs Disk, WAL",
   "query-cache": "쿼리 캐시",
+  "when-you-choose-dbms": "DBMS 별 선택이 필요할 때",
   "about": {
     "title": "About",
     "type": "page"
