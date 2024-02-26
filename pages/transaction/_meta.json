@@ -1,6 +1,6 @@
 {
     "intro": "소개",
     "what-is-mvcc": "MVCC",
-    "what-is-acid": "트랜잭션의 기본 4원칙",
+    "what-is-acid": "트랜잭션의 기본 4원칙 (ACID)",
     "transaction-isolation-level": "트랜잭션 격리수준"
 }
