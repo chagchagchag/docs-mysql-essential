@@ -1,0 +1,206 @@
+## 스프링의 @Transactional
+
+아래와 같이 댓글을 insert 하고, 집계 테이블을 카운트하는 SQL 이 있다고 해보겠습니다. 댓글 추가 시에는 본문에 대한 댓글 집계 테이블을 업데이트 해줍니다. 
+
+```sql
+START TRANSACTION;
+
+-- (1) 댓글 작성 
+INSERT INTO comment (
+    title, content, author_id, updated_dt
+)
+VALUES(
+    'Hello', 'Great Hello World', 1, '2024-02-28'
+);
+
+-- (2) 원글에 대한 댓글 개수 카운팅
+INSERT INTO content_comment_cnt(
+    content_id, comment_cnt
+)
+VALUES (
+    1, 1
+)
+ON DUPLICATE KEY UPDATE
+     comment_cnt = comment_cnt + 1;
+
+
+-- (3) 사용자 활동 기록 추가
+INSERT INTO user_activity_history(
+    activity_type, created_dt
+)
+VALUES(
+    'CREATE_COMMENT', '2024-02-28 19:30:30'
+)
+
+COMMIT;
+```
+
+<br/>
+
+
+
+(1) 까지는 런타임 에러 없이 잘 수행되었다고 가정하겠습니다. <br/>
+
+(2) 에서는 댓글 개수 카운팅을 진행해서 본문에 대한 댓글 개수를 업데이트 해줍니다.<br/>
+
+(3) 에서는 사용자 활동 기록을 추가합니다.<br/>
+
+그런데 만약 `(3)` 에서 테이블에 데이터를 insert 하는 도중에 `activity_type` 의 글자수 제한을 넘어서서 INSERT 에러가 났을 경우에는 어떻게 해야 하는 것일까요?<br/>
+
+<br/>
+
+
+
+사용자 활동 기록이 중요하고, 활동기록 없이는 댓글 역시도 의미가 없는 비즈니스 규칙을 세워둔 상태라면 같은 트랜잭션에 있는 (1) 댓글 작성, (2) 원글에 대한 댓글 개수 카운팅, (3) 사용자 활동 기록 추가가 모두 롤백되어야 합니다.<br/>
+
+
+
+이렇게 하나의 트랜잭션 안에서 여러 연산을 수행할 때 하나의 트랜잭션에 있는 연산들은 마치 하나의 연산인 것처럼 하나가 실패하면 모두 실패해서 롤백처리해야 하는 것을 트랜잭션의 원자성이라는 개념이라고 이야기합니다.<br/>
+
+
+
+## SQL Transaction
+
+SQL 로도 Transaction 을 수행할 수 있습니다. 예를 들면 아래와 같이 `START TRANSACTION` 과 `COMMIT` 사이에 필요한 SQL을 작성해주면 됩니다.
+
+```SQL
+START TRANSACTION;
+
+// 필요한 연산들 작성
+
+COMMIT;
+```
+
+<br/>
+
+
+
+## TransactionTemplate, @Transactional
+
+스프링에서는 Transaction 을 처리할 때 전처리, 후처리(커밋, 롤백, 자원회수 등)코드로 인한 보일러 플레이트 코드들이 양산되지 않고 효과적으로 애플리케이션의 코드 들이 관리될 수 있도록 아래의 두가지 방식으로 트랜잭션 기능을 제공합니다.
+
+- TransactionTemplate 에 람다 형태로 후처리를 위한 callback 메서드를 전달
+- @Transactional 기반의 선언형 트랜잭션 처리 코드 사용
+
+<br/>
+
+
+
+## @Transactional 
+
+사실 이번 문서 페이지에 `@Transactional` 을 정리할지말지 굉장히 고민했습니다. 기본적인 원칙들을 정리할 때 필요한 예제들도 많고 짧게 정리하고 넘어가면 또 뭔가 이상하기도 해서였습니다.<br/>
+
+고민을 거듭해본 결과 이번 문서에서는 가급적 간단한 내용들만을 다루기로 했습니다. MySQL 이라는 주제에서 벗어날 수도 있기 때문에 추후 별도의 jpa, querydsl 개념을 정리하는 카테고리를 정리할지 고민해봐야 할 것 같습니다.<br/>
+
+
+
+### 스프링의 @Transactional
+
+@Transactional 은 javax 에서 제공하는 @Transactional 도 있고 Spring 에서 제공하는 @Transactional 도 있습니다. 스프링의 @Transactional 은 javax 에서 제공하는 @Transactiaonl 에 비해 제공되는 기능이나 트랜잭션 전파 옵션 역시 다양하고 강력하게 제공되고 있기 때문에 가급적 스프링의 @Transactional 을 사용하는 것을 권장 드립니다.<br/>
+
+<br/>
+
+
+
+### @Transactional 메서드는 프록시 객체에서 실행
+
+@Transactional 을 명시한 메서드는 스프링에 의해서 내부적으로는 해당 메서드가 속한 클래스를 상속받은(extends) 확장 클래스 객체를 프록시 객체가 실제로 Database 연산을 수행하고 Commit, Rollback, Resource 반납 등의 연산을 수행하게 됩니다.<br/>
+
+내부적으로는 Spring Data 에서 AOP 기반으로 `@Transactional` 이 붙은 메서드/클래스/인터페이스에 대한 처리를 하도록 되어 있습니다. 이런 동작으로 인해 간단하게 우리가 작성한 코드의 메서드 위에 `@Transactional` 을 붙이는 것 만으로 해당 메서드 내의 연산은 마치 하나의 연산인 것처럼 원자적 연산을 할 수 있게 됩니다.<br/>
+
+<br/>
+
+
+
+### @Transactional 사용 시 내부호출, 상속관계에 유의
+
+@Transactional 이 적용된 메서드는 AOP 기반으로 동작하기 때문에 가짜 객체인 프록시를 기반으로 동작하기 때문에 해당 프록시의 메서드가 아닌 실제 객체의 메서드를 호출할 경우 @Transactional 이 적용되지 않는 이슈가 발생할 수 있습니다. 이런 이유로 하나의 @Transactional 연산 안에 많은 코드를 길게 늘여서 쓰는 경우도 있습니다. <br/>
+
+
+
+이렇게 @Transactional 이 언제 합류하고 언제 별도로 수행할 수 있도록 하는지는 트랜잭션 전파 옵션을 통해 해결이 가능합니다. @Transactional 에 대한 기본 원칙은 아래와 같습니다.<br/>
+
+
+
+- 클래스레벨에 @Transactional 
+  - 클래스레벨에 @Transactional 이 적용되면 모든 public 메서드에 @Transactional 자동 적용
+- @Transactional 덮어쓰기
+  - 최 하위레벨에서 덮어쓴 선언이 최종 @Transactional 선언이 됩니다.
+- 인터페이스에 @Transactional
+  - 인터페이스에도 @Transactional 이 적용될 수 있다.
+- 예외케이스) 같은 클래스 내 non-tx 메서드 → tx 메서드 호출하는 경우 
+  - Transactional 이 적용되지 않은 메서드에서 같은 클래스내의 @Transactional 적용된 메서드 내부 호출하는 경우입니다.
+  - ex) 가짜 객체의 일반 메서드 A 호출 → 가짜객체는 실제 객체의 일반메서드 A 호출 →실제 객체의 일반 메서드A에서 @Transactional 메서드 AA 호출 → @Transactional 적용 안됨
+
+<br/>
+
+
+
+이것과 관련해서는 예전에 정리해둔 문서가 있고 원리를 설명해두긴 했던 문서인데 정말 너무 길어서 여기서 설명하기에는 무리입니다. 추후 별도의 카테고리를 추가해 정리해두도록 하겠습니다.<br/>
+
+<br/>
+
+
+
+## Exception 발생시 스프링의 커밋/롤백 정책
+
+체크드, 언체크드 예외인지에 따라서 아래와 같이 커밋/롤백 여부가 달라집니다.
+
+- 언체크 예외(Unchecked Exception)
+  - [RuntimeException (Java SE 9 & JDK 9 )](https://docs.oracle.com/javase/9/docs/api/java/lang/RuntimeException.html)
+  - 스프링은 언체크 예외에 대해서 트랜잭션을 롤백합니다.
+  - 언체크 예외는 복구 불가능한 예외로 여깁니다.
+  - e.g. RuntimeException, Error
+- 체크 예외(Checked Exception)
+  - [Exception (Java Platform SE 8 )](https://docs.oracle.com/javase/8/docs/api/index.html?java/lang/Exception.html)
+  - 스프링은 체크 예외 발생시 트랜잭션을 롤백하지 않습니다.(커밋합니다.)
+  - 복구가 가능한 예외로 간주하고 여기에 대한 처리 코드를 정의해주어야 합니다.
+  - 체크 예외는 반드시 `catch{...}` 구문을 작성하기에 `catch {...}` 내에서 복구 로직을 정의해줍니다.
+  - e.g. 주문 시도 시 결제사 API 장애로 인해 실패시 주문은 성공시키고, 결제 대기 중으로 처리해야 할 경우
+  - e.g. Exception.class
+
+<br/>
+
+
+
+다만 체크 예외를 사용하더라도 `@Transactional` 에 rollbackFor 옵션에 원하는 예외 클래스를 지정하면, 예외가 발생하면 롤백을 합니다. (오버라이딩하는 느낌이라고 생각하시면 될 것 같습니다.)<br/>
+
+그리고 이러한 언체크 예외, 체크 예외는 아래와 같이 비즈니스 예외, 시스템 예외로 나누어서 기준을 마련해두는 것이 프로젝트 초기 작업 시에 혼선을 방지할 수 있어서 유리합니다.<br/>
+
+<br/>
+
+비즈니스 예외 (체크 예외)
+
+- 비즈니스 예외의 의미가 있을 때 사용
+- 체크예외로 취급
+- 비즈니스 적으로 예외가 발생한 것은 Checked 되어야 한다는 의미.
+- 비즈니스 적으로 예외가 발생하는 것은 어떤 상태에서 어떤 이유로 예외가 발생되었는지 기록이 되어야 하기에 예외가 발생하더라도 커밋이 되는 Checked Exception 을 사용합니다. (=체크를 한다는 의미)
+- e.g. 예를 들어 환전 후 주식을 매수하는 로직이 있을 경우 환전 후 주식을 매수하려는 순간에 환율이 또 바뀌어서 잔고가 부족해서 주식 매수가 안될 때가 있습니다. 이런 경우 Checked Exception 을 통해서 명시적인 예외를 처리한 경우로 들 수 있습니다.
+- e.g. 주문 후 결제 API 실패 시, 주문을 실패한 것이 아니라 결제 대기 중으로 처리해야 할 경우
+
+
+
+시스템 예외 (언체크 예외)
+
+- 복구할 수 없는 예외는 커밋이 되어야 하지 말아야 함.
+- 언체크드 예외로 취급합니다.
+- 예를 들면 네트워크 유실 등의 예외가 발생하면, 커밋이 발생하지 않도록 롤백 처리를 해주어야 합니다.
+
+<br/>
+
+
+
+## @Transactional 의 옵션들
+
+<br/>
+
+
+
+## @Transactional 기반 테스트
+
+문서를 또 뒤적뒤적 찾아봐야한다니 흑...<br/>
+
+
+
+
+
