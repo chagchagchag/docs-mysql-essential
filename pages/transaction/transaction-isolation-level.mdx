@@ -30,13 +30,13 @@
 ## Read Committed 
 > Non Repeatable Read 가 발생합니다.
 
-다른 트랜잭션에서 커밋된 데이터를 읽어들일 수 있는 격리수준을 의미합니다. 커밋된 데이터를 읽어들이기에 롤백된 데이터를 읽게 되는 불상사는 없습니다. 하지만 다른 트랜잭션에서 수정 후 커밋을 한 데이터를 읽어들이기에 조회 작업 도중에 다른 트랜잭션에서 같은 데이터에 대한 수정본 커밋을 한다면 수정본이 읽히는 현상인 Non Repeatable Read 현상이 발생합니다.<br/>
-
-
+다른 트랜잭션에서 커밋된 데이터를 읽어들일 수 있는 격리수준을 의미합니다. 커밋된 데이터를 읽어들이기에 롤백하지 못한 데이터를 읽게 되는 불상사는 없습니다. 하지만 다른 트랜잭션에서 수정 후 커밋을 한 데이터를 읽어들이기에 조회 작업 도중에 다른 트랜잭션에서 같은 데이터에 대한 수정본 커밋을 한다면 수정본이 읽히는 현상인 Non Repeatable Read 현상이 발생합니다.<br/>
 
 ### Non Repeatable Read 현상
 
+은행 송금을 예로 들면 Read Committed 에서 발생할 수 있는 Non Repeatable Read 현상은 아래와 같은 상황이 발생합니다.
 
+![](./img/transaction-isolation/non-repeatable-read.png)
 
 
 
@@ -47,12 +47,39 @@
 ## Repeatable Read
 > Phantom Read 가 발생합니다.
 
+Repeatable Read 격리 수준은 Read Committed 가 보장하지 못하는 수정/커밋 된 데이터에 대해 Repeatable Read 가 가능하도록 하는 격리 수준입니다. Repeatable Read 는 다른 트랜잭션에서 수정/커밋 했어도 한번 조회했던 데이터를 조회하면 그 데이터에 대해서는 같은 데이터가 조회됨을 보장합니다.<br/>
 
+하지만 새롭게 추가된 데이터가 있을 경우에는 반복 조회 시에 같은 결과 값을 조회할 수 있음을 보장하지 못합니다.<br/>
+
+이런 현상을 새롭게 추가된 한 행을 유령(Phantom) 으로 비유하는 Phantom Read 현상이라고 이야기합니다.<br/>
+
+### Phantom Read 
+
+Repeatable Read 는 하나의 트랜잭션에서 데이터를 반복 조회할 때 다른 트랜잭션에서 수정/추가 한 데이터로 인해 새로 추가된(Phantom) 데이터가 보이는 현상을 의미합니다.
+
+![](./img/transaction-isolation/phantom-read.png)
 
 <br/>
 
+
+
 ## Serializable 
 가장 엄격한 격리수준이지만, 동시성 성능이 급격히 저하될 가능성이 높습니다.
+
+<br/>
+
+
+
+## 격리 수준 레벨 별 현상 분류
+
+|                   | Dirty Read | Non Repeatable Read | Phantom Read |
+| ----------------- | ---------- | ------------------- | ------------ |
+| Read Unommitted   | 발생       | 발생                | 발생         |
+| Read Committed    |            | 발생                | 발생         |
+| Repeatable Read   |            |                     | 발생         |
+| Serializable Read |            |                     |              |
+
+<br/>
 
 
 
