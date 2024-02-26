@@ -7,6 +7,7 @@
   "memory-disk-wal": "Memory vs Disk, WAL",
   "query-cache": "쿼리 캐시",
   "when-you-choose-dbms": "DBMS 별 선택이 필요할 때",
+  "uuid-vs-auto-increment": "UUID vs Auto Increment",
   "about": {
     "title": "About",
     "type": "page"
