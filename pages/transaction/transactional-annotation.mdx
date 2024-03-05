@@ -242,7 +242,7 @@ spring.datasource.username=sa
 
 #### TestContainers
 
-하지만, JdbcTemplate 이나 MyBatis, Querydsl 을 이용해서 쿼리 최적화가 된 쿼리를 수행할 경우에는 MySQL, PostgreSQL, Oracle 과 같은 DBMS 에서 지원하는 SQL 이 H2 Database 의 일부 문법과 호환이 되지 않아서 h2 Database 에서 진행이 안되는 경우가 있습니다. 이런 경우 testcontainers 를 사용하면 됩니다. 옛날에는 Spring 에서 testcontainers 를 공식으로 채택하지 않아서 불편한점이 있었지만 최근에는 testcontainers 가 spring boot 에서 공식지원됩니다. 따라서 아래와 같이 의존성을 추가해주면 testcontainers 를 사용할 수 있습니다.<br/>
+하지만, JdbcTemplate 이나 MyBatis, Querydsl 을 이용해서 쿼리 최적화가 된 쿼리를 수행할 경우에는 MySQL, PostgreSQL, Oracle 과 같은 DBMS 에서 지원하는 SQL 이 H2 Database 의 일부 문법과 호환이 되지 않아서 h2 Database 에서 진행이 안되는 경우가 있습니다. 이런 경우 testcontainers 를 사용하면 됩니다. 옛날에는 Spring 에서 testcontainers 를 공식으로 채택하지 않아서 불편한점이 있었지만 최근에는 testcontainers 가 spring boot 에서 공식지원됩니다. <br/>
 
 TestContainers 는 Java 코드로도 생성할 수 있지만, docker-compose 기반의 mysql 도커 정의 파일을 만들어두고 이 docker-compose 파일 기반으로 테스트를 할 수 있도록 할수도 있습니다.<br/>
 
