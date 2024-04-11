@@ -114,23 +114,37 @@ COMMIT;
 
 ### @Transactional 사용 시 내부호출, 상속관계에 유의
 
-@Transactional 이 적용된 메서드는 AOP 기반으로 동작하기 때문에 가짜 객체인 프록시를 기반으로 동작하기 때문에 해당 프록시의 메서드가 아닌 실제 객체의 메서드를 호출할 경우 @Transactional 이 적용되지 않는 이슈가 발생할 수 있습니다. @Transactional 연산의 원리를 이해하고 있지 못하거나 기억하고 있지 못한 경우 @Transactional 안에 많은 코드를 길게 늘여서 쓰는 안좋은 경우도 있습니다. <br/>
+@Transactional 이 적용된 메서드는 AOP 기반으로 동작하기 때문에 실제 객체를 상속(확장)받은 가짜 객체인 프록시객체를 기반으로 동작합니다. 따라서 해당 프록시의 메서드가 아닌 실제 객체의 메서드를 호출할 경우 @Transactional 이 적용되지 않는 이슈가 발생할 수 있습니다. @Transactional 연산의 원리를 이해하고 있지 못하거나 기억하고 있지 못한 경우 @Transactional 안에 많은 코드를 길게 늘여서 쓰는 안좋은 경우도 있습니다. <br/>
 
-@Transactional 이 언제 합류하고 언제 별도로 수행할 수 있도록 하는지는 트랜잭션 전파 옵션을 통해 해결이 가능합니다. @Transactional 에 대한 기본 원칙은 아래와 같습니다.<br/>
+@Transactional 이 언제 합류하고 언제 별도로 수행할 수 있도록 하는지는 트랜잭션 전파 옵션을 통해 해결이 가능합니다. 트랜잭션 전파 옵션에 관해서는 [트랜잭션 전파옵션](https://chagchagchag.github.io/docs-mysql-essential/transaction/transactional-propagation-option/) 문서를 참고해주세요. @Transactional 에 대한 기본 원칙은 아래와 같습니다.<br/>
 
 
 
 - 클래스레벨에 @Transactional 
-  - 클래스레벨에 @Transactional 이 적용되면 모든 public 메서드에 @Transactional 자동 적용
+  - 클래스레벨에 @Transactional 이 적용되면 모든 public 메서드에 @Transactional 자동 적용<br/>
 - @Transactional 덮어쓰기
   - 최 하위레벨에서 덮어쓴 선언이 최종 @Transactional 선언이 됩니다.
 - 인터페이스에 @Transactional
-  - 인터페이스에도 @Transactional 이 적용될 수 있다.
-- 예외케이스) 같은 클래스 내 non-tx 메서드 → tx 메서드 호출하는 경우 
-  - Transactional 이 적용되지 않은 메서드에서 같은 클래스내의 @Transactional 적용된 메서드 내부 호출하는 경우입니다.
-  - ex) 가짜 객체의 일반 메서드 A 호출 → 가짜객체는 실제 객체의 일반메서드 A 호출 →실제 객체의 일반 메서드A에서 @Transactional 메서드 AA 호출 → @Transactional 적용 안됨
+  - 인터페이스에도 @Transactional 이 적용될 수 있습니다.
 
 <br/>
+
+
+
+**예외케이스) 같은 클래스 내 non-tx 메서드 → tx 메서드 호출하는 경우**<br/>
+
+트랜잭션이 적용이 안되는 예외 케이스도 있습니다. <br/>
+
+같은 클래스 내에 @Transactional 을 적용하지 않은 일반 메서드에서 @Transactional 이 적용된 메서드를 호출하는 경우, 프록시 객체에서 트랜잭셔널 메서드를 호출하는 것이 아니라 실제 객체에서 트랜잭셔널 메서드를 호출하게 되기에 트랜잭셔널이 적용되지 않습니다.<br/>
+
+요약해보면, Transactional 이 적용되지 않은 일반 메서드에서 같은 클래스내의 @Transactional 적용된 메서드를 객체 내에서 내부 호출하는 경우 트랜잭셔널 프록시를 거치지 못하게 됩니다. 즉, 이 경우에는 트랜잭셔널이 적용되지 않습니다.
+
+- e.g. 
+  - 가짜 객체의 일반 메서드 A 호출 → 가짜객체는 실제 객체의 일반메서드 A 호출 →실제 객체의 일반 메서드A에서 @Transactional 메서드 AA 호출 → @Transactional 적용 안됨
+
+<br/>
+
+
 
 이것과 관련해서는 예전에 정리해둔 문서가 있고 원리를 설명해두긴 했던 문서인데 정말 너무 길어서 여기서 설명하기에는 무리입니다. 추후 별도의 카테고리를 추가해 정리해두도록 하겠습니다.<br/>
 
