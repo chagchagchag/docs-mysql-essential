@@ -9,6 +9,17 @@
 
 이번 문서에서는 이 과정에 대해 세부적으로 설명합니다.<br/>
 
+
+
+## 참고
+
+- [MySQL 8.0: New Lock free, scalable WAL design](https://dev.mysql.com/blog-archive/mysql-8-0-new-lock-free-scalable-wal-design/)
+  - 크롬 구글 번역기를 사용하시기를 강추합니다!!
+
+<br/>
+
+
+
 ## 메모리 쓰기 시 장애를 보완 - WAL
 
 데이터베이스의 데이터는 최종적으로 디스크에 저장됩니다. 디스크는 메모리에 비해 성능이 많이 떨어집니다. 따라서 데이터베이스 성능에 있어서 핵심으로 두는 중점사항은 **"디스크로의 랜덤I/O 를 최소화하는 것"** 입니다.<br/>
