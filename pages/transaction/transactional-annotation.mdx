@@ -337,7 +337,7 @@ TestContainers 는 Java 코드로도 생성할 수 있지만, docker-compose 기
 #### 행위 기반 검증
 
 - when : @Transactional 이 적용된 메서드 내에서 Exception 이 발생하는 상황을 Mockito 를 이용해서 가정
-- then : @Transacitonal 이 적용된 해당 메서드 내에서 예외 발생 이후의 그 다음리안의 로직들이 실행되는지를 테스트 코드에서 Mockito.verify() 를 통해 호출여부를 검증
+- then : @Transacitonal 이 적용된 해당 메서드 내에서 예외 발생 이후의 그 다음라인의 로직들이 실행되는지를 테스트 코드에서 Mockito.verify() 를 통해 호출여부를 검증
   - 여기까지는 실행되어야 하고
   - 여기까지는 실행이 되지 말아야 한다 
 
