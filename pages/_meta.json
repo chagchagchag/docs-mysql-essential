@@ -8,6 +8,7 @@
   "query-cache": "쿼리 캐시",
   "when-you-choose-dbms": "DBMS 별 선택이 필요할 때",
   "uuid-vs-auto-increment": "UUID vs Auto Increment",
+  "unique-key-in-distributed-system": "분산시스템에서의 유일키 생성 방식",
   "jpa-vs-mybatis-jdbctemplate": "JPA vs Mybatis, JdbcTemplate",
   "about": {
     "title": "About",
