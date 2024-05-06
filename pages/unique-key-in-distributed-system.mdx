@@ -6,7 +6,7 @@
 
 **스노우 플레이크란?**<br/>
 
-유일키 발급 방식의 제일 유명한 사례는 트위터의 스노우 플레이크 방식 입니다. 스노우플레이크 의 방식을 꼭 따르지 않아도 되고 `시간(정수 또는 문자열)+상품코드+별도의 데이터 Range` 와 같은 방식으로 유일키를 생성해낼 수도 있고 여러가지 상황에 맞춰서 유일키 기반으로 동시성 처리를 하는 것이 가능합니다. 아마도 유일키 기반 작업 대기열 처리 방식은 실무에서도 실제로 많이 쓰이는 방식일 것으로 보입니다. <br/>
+유일키 발급 방식의 제일 유명한 사례는 트위터의 스노우 플레이크 방식 입니다. 스노우플레이크 의 방식을 꼭 따르지 않아도 되고 `시간(정수 또는 문자열)+상품코드+별도의 데이터 Range` 와 같은 방식으로 유일키를 생성해내는 것도 생각해볼 수 있습니다. <br/>
 
 이번 문서에서는 Snowflake 는 뭔지를 가장 마지막에 알아보고, 유일키 발급 시스템을 구축할 때 어떤 내용들을 고민하게 되는지를 정리해봅니다.<br/>
 
@@ -89,7 +89,15 @@
 
 UUID 는 유일성이 보장되는 키를 표현하는 방식입니다. 128 비트의 문자 또는 숫자로 구별되고, UUID 는 충돌 가능성이 굉장히 낮습니다.<br/>
 
-UUID 는 중복된 UUID 가 생길 확률을 50%로 끌어올리려면 초당 10개의 UUID 를 86년 동안 계속해서 생성해야 합니다. ([UUID - ko.wikipedia.org](https://ko.wikipedia.org/wiki/%EB%B2%94%EC%9A%A9_%EA%B3%A0%EC%9C%A0_%EC%8B%9D%EB%B3%84%EC%9E%90) 내의 Collisions 절 참고)
+UUID 는 중복된 UUID 가 생길 확률을 50%로 끌어올리려면 초당 10억개의 UUID 를 86년 동안 계속해서 생성해야 합니다. 
+
+> [UUID - en.wikipedia.org](https://en.wikipedia.org/wiki/Universally_unique_identifier) 내의 Collisions 절 참고<br/>
+>
+> For example, the number of random version-4 UUIDs which need to be generated in order to have a 50% probability of at least one collision is 2.71 quintillion, computed as follows.
+>
+> ![](https://wikimedia.org/api/rest_v1/media/math/render/svg/d765375604fa68b3179d171917404a6361f7f3d1)
+>
+> This number is equivalent to generating 1 billion UUIDs per second for about 86 years.
 
 ![](./img/unique-key-in-distributed-system/uuid-1.png)
 
