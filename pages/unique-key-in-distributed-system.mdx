@@ -107,6 +107,79 @@ UUID 는 중복된 UUID 가 생길 확률을 50%로 끌어올리려면 초당 10
 
 다만 UUID 의 경우 숫자형식이 아니고 문자가 섞여있는 방식이기에 발급 순서별로 정렬하는 것은 쉽지 않다는 점을 인지해야 합니다.<br/>
 
+UUID 의 경우 생성 순으로 정렬이 불가능한데, 이런 단점을 해결한 것이 ULID 라는 유일키 체계입니다. ULID 기반의 유일키발급 코드를 간단하게 예시를 들어보면 아래와 같습니다.<br/>
+
+**UlidCreator.kt**
+
+```kotlin
+package net.spring.cloud.prototype.dataaccess.ulid
+
+import com.github.f4b6a3.ulid.UlidCreator
+import java.util.*
+
+class UlidCreator {
+    companion object{
+        fun monotonicUuid(): UUID = UlidCreator.getMonotonicUlid().toUuid()
+    }
+}
+```
+
+<br/>
+
+
+
+위에서 사용한 `com.github.f4b6a3.ulid.UlidCreator` 라이브러리는 아래의 의존성을 추가해줘야 합니다.<br/>
+
+**build.gradle.kts**
+
+```kotlin
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+dependencies {
+    // ...
+    implementation("com.github.f4b6a3:ulid-creator:5.2.0")
+    // ...
+}
+```
+
+<br/>
+
+
+
+ULID 의 공식 깃헙은 아래와 같습니다.
+
+- [github.com/ulid/spec](https://github.com/ulid/spec)
+
+<br/>
+
+
+
+ulid와 관련된 Java 진영의 오픈소스 라이브러리들은 아래와 같습니다.
+
+- [github.com/f4b6a3/ulid-creator](https://github.com/f4b6a3/ulid-creator) : 위의 코드에서 사용한 Ulid Creator 입니다.
+- [github.com/azam/ulidj](https://github.com/azam/ulidj)
+- [github.com/Lewiscowles1986/jULID](https://github.com/Lewiscowles1986/jULID)
+
+<br/>
+
+
+
+저 역시 UlidCreator 를 사용해서 토이 프로젝트를 진행한 경험이 있습니다.<br/>
+
+ULID Creator 관련 소스 링크는 아래와 같습니다.
+
+- [build.gradle.kts](https://github.com/chagchagchag/eda-based-spring-cloud/blob/main/foobar-core/foobar-core-dataaccess/build.gradle.kts)
+- [UlidCreator.kt](https://github.com/chagchagchag/eda-based-spring-cloud/blob/main/foobar-core/foobar-core-dataaccess/src/main/kotlin/net/spring/cloud/prototype/dataaccess/ulid/UlidCreator.kt)
+
+<br/>
+
+
+
+위 소스의 프로젝트 문서와 Github 리포지터리는 아래와 같습니다.
+
+- 프로젝트 Github Repository : [github.com/eda-based-spring-cloud](https://github.com/chagchagchag/eda-based-spring-cloud)
+- 프로젝트 문서 : [chagchagchag.github.io/eda-based-spring-cloud-doc](https://chagchagchag.github.io/eda-based-spring-cloud-doc/)
+
 <br/>
 
 
@@ -139,7 +212,7 @@ UUID 는 중복된 UUID 가 생길 확률을 50%로 끌어올리려면 초당 10
 
 
 
-이렇게 생성한 유일키는 동시성 처리 시 Write Behind 방식으로 Request 대기열을 쌓아둘 때 각각의 Request 를 유일하게 식별할 수 있다는 점에서 유용합니다.<br/>
+이렇게 생성한 유일키는 일반적인 기본키 발급 방식으로도 쓸수 있고, 작업/요청(Request) 대기열을 각각의 교유키로 처리하는 대기열 처리 시스템에서도 유용하게 사용가능합니다.<br/>
 
 <br/>
 
@@ -149,31 +222,41 @@ UUID 는 중복된 UUID 가 생길 확률을 50%로 끌어올리려면 초당 10
 
 **유일키 발급 방식은 어디서 사용하면 좋은가요?**<br/>
 
-댓글, 채팅, 아이돌 티켓팅 처럼 무한대의 트래픽을 모두 받아야 할 경우에 대해 서비스가 유일키를 발급하면서 발급 순서를 유지할 수 있는 방식을 떠올려야 할 때 사용하면 좋습니다. 다만 분산 시스템에서 유일키 충돌 없이 동작해야 한다는 전제 조건을 만족해야 합니다.<br/>
+**1\. 요청/작업 대기열 시스템**<br/>
+
+무한대의 트래픽 요청을 모두 받아야 할 경우에 대해 작업 대기열 구분 시 요청 각각에 유일키를 발급하면서 발급 순서를 유지할 수 있는 방식을 떠올려야 할 때 사용하면 좋습니다. 다만 분산 시스템에서 유일키 충돌 없이 동작해야 한다는 전제 조건을 만족해야 합니다.<br/>
 
 유일키 발급 시스템은 잘 활용하면 여러 개의 요청이 동시에 몰렸을 때, 이 것을 Write Behind 방식으로 요청의 대기열을 만들어서 처리할 때 각각의 요청을 유일키를 발급해서 처리하는 것이 가능해집니다. 예를 들면 쿠폰이나 티켓을 발급하는 경우, 채팅 시스템을 예로 들 수 있습니다. 제 경우에는 주식 시세 프로젝트를 하면서 비슷한 경험을 했습니다.<br/>
 
 이렇게 해서 만든 유일키는 보통 Redis 등과 같은 캐시 내의 Set, List 에 쌓아서 FIFO 메시지 대기열내에서 각각의 작업을 ID 기반으로 구분하는 용도로 사용됩니다.<br/>
 
-이번 문서에서는 유일키 발급을 하는 여러가지 방식들에 대해 정리해봅니다.<br/>
+
+
+**2\. 일반적인 분산 시스템에서 사용하는 Database 의 기본키**<br/>
+
+분산 시스템에서 데이터의 행이 새로 추가될 때 auto increment 를 사용할 경우 Duplicated Key 관련 예외가 발생할 확률이 어느 정도는 있습니다. <br/>
+
+기본키 체계를 회사에서 따로 정한 유일키 발급 시스템으로 지정하면 이런 충돌가능성에 대해 미연에 방지할 수 있게 됩니다.<br/>
+
+
+
+> **굳이 도입이 필요하지 않은 경우도 있나요?**<br/>
+>
+> 결제 시스템, 원장 관리 등과 같은 서비스에는 반드시 필요하지는 않습니다. 하지만, 요청이 늘어나서 Duplicated Key 관련 예외발생확률이 높아지기 시작한다면 고민을 해야 할 것 같습니다. 만약 기본키의 Range 를 늘리면서 생성시각에 따른 정렬이 가능한 기본키를 원한다면 도입을 고려하게 될 것 같습니다. <br/>
+>
+> 만약 제가 처음부터 개발을 시작한다면, 유일키 발급 방식을 직접 구현해서 적용하게 될 것 같습니다.<br/>
+>
+> <br/>
 
 <br/>
 
 
 
-**굳이 도입이 필요하지 않은 경우도 있나요?**<br/>
+**위에서 이야기한 요청/작업 대기열 시스템이 불필요한 경우도 있나요?**<br/>
 
-결제 시스템, 원장 관리 등과 같은 서비스에는 반드시 필요하지는 않습니다. 만약 기본키의 Range 를 늘리면서 생성시각에 따른 정렬이 가능한 기본키를 원한다면 도입을 고려하게 될 것 같습니다. <br/>
+결제시스템, 원장관리 등과 같은 서비스는 요청을 모두 처리해야 한다기 보다는 트랜잭션의 동작을 정확하게 처리하는 것이 더 중요하고 서버의 안정성이 더 중요하기 때문에 요청/작업 대기열을 사용한다기 보다는 RateLimiter 를 이용해서 자체적인 유입량을 제어하는 것이 더 낫습니다.<br/>
 
-<br/>
-
-
-
-**메시지 대기열이 필요하지 않은 경우도 있나요?**<br/>
-
-결제시스템, 원장관리 등과 같은 서비스는 요청을 모두 처리해야 한다기 보다는 트랜잭션의 동작을 정확하게 처리하는 것이 더 중요하고 서버의 안정성이 더 중요하기 때문에 메시지 대기열을 사용한다기 보다는 RateLimiter 를 이용해서 자체적인 유입량을 제어하는 것이 더 낫습니다.<br/>
-
-정산 시스템에도 굳이 메시지 대기열을 적용할 필요가 없습니다. 정산서비스의 경우 조금 느리더라도 Database 를 정확하게 이해하고 정산 작업이 조금 더 효율적으로 동작하도록 설계하는 것이 더 중요하기 때문입니다.<br/>
+정산 시스템에도 굳이 요청/작업 대기열을 적용할 필요가 없습니다. 정산서비스의 경우 조금 느리더라도 Database 를 정확하게 이해하고 정산 작업이 조금 더 효율적으로 동작하도록 설계하는 것이 더 중요하기 때문입니다.<br/>
 
 Rate Limiter 알고리즘은 Java 외에도 굉장히 다양한 언어에서 알고리즘을 구현하고 있습니다. 스프링에서는 Spring Cloud Gateway 에서 RateLimiter 를 지원하며 기본 옵션은 Token Bucket Algorithm 을 사용합니다.<br/>
 
